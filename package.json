@@ -1,0 +1,38 @@
+{
+  "name": "playwright-cucumber-ts-framework",
+  "version": "1.0.0",
+  "description": "Automation framework using Playwright, Cucumber, TypeScript and POM",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "report:update": "serenity-bdd update --artifact net.serenity-bdd:serenity-cli:jar:3.9.8",
+    "report:generate": "serenity-bdd run --artifact net.serenity-bdd:serenity-cli:jar:3.9.8",
+    "report": "npm run report:update && npm run report:generate",
+    "test:report": "npm test && npm run report:generate"
+  },
+  "keywords": [
+    "playwright",
+    "cucumber",
+    "typescript",
+    "pom",
+    "automation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@cucumber/cucumber": "^10.8.0",
+    "dotenv": "^17.4.2",
+    "playwright": "^1.44.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@serenity-js/console-reporter": "^3.44.0",
+    "@serenity-js/core": "^3.44.0",
+    "@serenity-js/cucumber": "^3.44.0",
+    "@serenity-js/serenity-bdd": "^3.44.0",
+    "@types/node": "^20.12.12",
+    "pptxgenjs": "^4.0.1"
+  }
+}
