@@ -8,5 +8,6 @@ node_modules/
 /playwright/.auth/
 #Reports
 target/
+reports/
 .env
 .DS_Store

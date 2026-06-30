@@ -14,7 +14,8 @@ module.exports = {
       'ts-node/register'
     ],
     format: [
-      '@serenity-js/cucumber'
+      '@serenity-js/cucumber',
+      'junit:reports/junit-results.xml'
     ]
   }
 };

@@ -1,0 +1,74 @@
+trigger:
+  - main
+  - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Variables por defecto. Pueden ser sobrescritas desde la UI de Azure DevOps
+  BROWSER: 'chromium'
+  HEADLESS: 'true'
+  BASE_URL: 'https://www.saucedemo.com'
+
+steps:
+  # 1. Instalar Node.js
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Instalar Node.js'
+
+  # 2. Instalar dependencias del proyecto (incluye playwright y serenity)
+  - script: npm ci
+    displayName: 'Instalar dependencias con npm ci'
+
+  # 3. Instalar navegadores de Playwright y dependencias del sistema operativo (Ubuntu)
+  - script: npx playwright install --with-deps
+    displayName: 'Instalar navegadores de Playwright'
+
+  # 4. Configurar Java (Requerido por la CLI de Serenity BDD para compilar los reportes HTML)
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+    displayName: 'Configurar JDK 11 para reportes Serenity'
+
+  # 5. Ejecutar los escenarios de Cucumber
+  # Usamos continueOnError: true para asegurar que si un test falla, el pipeline continúe 
+  # y publique los resultados y los reportes.
+  - script: npm test
+    displayName: 'Ejecutar pruebas automatizadas'
+    env:
+      BROWSER: $(BROWSER)
+      HEADLESS: $(HEADLESS)
+      BASE_URL: $(BASE_URL)
+      # Nota: Configura SAUCE_USERNAME y SAUCE_PASSWORD en las variables secretas de Azure DevOps si son necesarias
+      SAUCE_USERNAME: $(SAUCE_USERNAME)
+      SAUCE_PASSWORD: $(SAUCE_PASSWORD)
+    continueOnError: true
+
+  # 6. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/junit-results.xml'
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      mergeTestResults: true
+      testRunTitle: 'Playwright + Cucumber Regression Run'
+    displayName: 'Publicar resultados JUnit en Azure DevOps'
+    condition: always()
+
+  # 7. Generar reporte visual Serenity/JS
+  - script: npm run report
+    displayName: 'Generar reporte visual Serenity/JS'
+    condition: always()
+
+  # 8. Publicar el reporte HTML de Serenity como artefacto de la ejecución
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'target/site/serenity'
+      ArtifactName: 'serenity-html-report'
+      publishLocation: 'Container'
+    displayName: 'Publicar reporte HTML de Serenity'
+    condition: always()
