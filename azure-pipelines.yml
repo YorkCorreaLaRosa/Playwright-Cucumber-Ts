@@ -1,3 +1,9 @@
+parameters:
+  - name: testTags
+    displayName: 'Etiquetas de Cucumber a ejecutar (ej. @test, @login, @smoke. Dejar vacío para ejecutar todo)'
+    type: string
+    default: ''
+
 trigger:
   - main
   - master
@@ -37,15 +43,22 @@ steps:
   # 5. Ejecutar los escenarios de Cucumber
   # Usamos continueOnError: true para asegurar que si un test falla, el pipeline continúe 
   # y publique los resultados y los reportes.
-  - script: npm test
+  - script: |
+      if [ -z "$TEST_TAGS" ]; then
+        echo "No se especificaron tags. Ejecutando todos los escenarios..."
+        npm test
+      else
+        echo "Ejecutando escenarios con la etiqueta: $TEST_TAGS"
+        npx cucumber-js --tags "$TEST_TAGS"
+      fi
     displayName: 'Ejecutar pruebas automatizadas'
     env:
       BROWSER: $(BROWSER)
       HEADLESS: $(HEADLESS)
       BASE_URL: $(BASE_URL)
-      # Nota: Configura SAUCE_USERNAME y SAUCE_PASSWORD en las variables secretas de Azure DevOps si son necesarias
       SAUCE_USERNAME: $(SAUCE_USERNAME)
       SAUCE_PASSWORD: $(SAUCE_PASSWORD)
+      TEST_TAGS: ${{ parameters.testTags }}
     continueOnError: true
 
   # 6. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
@@ -55,7 +68,7 @@ steps:
       testResultsFiles: '**/junit-results.xml'
       searchFolder: '$(System.DefaultWorkingDirectory)'
       mergeTestResults: true
-      testRunTitle: 'Playwright + Cucumber Regression Run'
+      testRunTitle: 'Playwright + Cucumber Run'
     displayName: 'Publicar resultados JUnit en Azure DevOps'
     condition: always()
 
