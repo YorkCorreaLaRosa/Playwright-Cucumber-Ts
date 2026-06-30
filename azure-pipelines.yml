@@ -17,9 +17,9 @@ variables:
 
 steps:
   # 1. Instalar Node.js
-  - task: NodeTool@0
+  - task: UseNode@1
     inputs:
-      versionSpec: '18.x'
+      version: '18.x'
     displayName: 'Instalar Node.js'
 
   # 2. Instalar dependencias del proyecto (incluye playwright y serenity/js)
