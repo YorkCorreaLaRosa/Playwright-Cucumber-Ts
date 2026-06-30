@@ -22,7 +22,7 @@ steps:
       versionSpec: '18.x'
     displayName: 'Instalar Node.js'
 
-  # 2. Instalar dependencias del proyecto (incluye playwright y serenity)
+  # 2. Instalar dependencias del proyecto (incluye playwright y serenity/js)
   - script: npm ci
     displayName: 'Instalar dependencias con npm ci'
 
@@ -30,17 +30,9 @@ steps:
   - script: npx playwright install --with-deps
     displayName: 'Instalar navegadores de Playwright'
 
-  # 4. Configurar Java (Requerido por la CLI de Serenity BDD para compilar los reportes HTML)
-  - task: JavaToolInstaller@0
-    inputs:
-      versionSpec: '11'
-      jdkArchitectureOption: 'x64'
-      jdkSourceOption: 'PreInstalled'
-    displayName: 'Configurar JDK 11 para reportes Serenity'
-
-  # 5. Ejecutar los escenarios de Cucumber
+  # 4. Ejecutar los escenarios de Cucumber
   # Usamos continueOnError: true para asegurar que si un test falla, el pipeline continúe 
-  # y publique los resultados y los reportes.
+  # y publique los resultados en Azure DevOps.
   - script: |
       if [ -z "$TEST_TAGS" ]; then
         echo "No se especificaron tags. Ejecutando todos los escenarios..."
@@ -59,7 +51,7 @@ steps:
       TEST_TAGS: ${{ parameters.testTags }}
     continueOnError: true
 
-  # 6. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
+  # 5. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -68,18 +60,4 @@ steps:
       mergeTestResults: true
       testRunTitle: 'Playwright + Cucumber Run'
     displayName: 'Publicar resultados JUnit en Azure DevOps'
-    condition: always()
-
-  # 7. Generar reporte visual Serenity/JS
-  - script: npm run report
-    displayName: 'Generar reporte visual Serenity/JS'
-    condition: always()
-
-  # 8. Publicar el reporte HTML de Serenity como artefacto de la ejecución
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: 'target/site/serenity'
-      ArtifactName: 'serenity-html-report'
-      publishLocation: 'Container'
-    displayName: 'Publicar reporte HTML de Serenity'
     condition: always()
