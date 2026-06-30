@@ -87,6 +87,21 @@ Todos los comandos se corren desde la terminal en la raíz del proyecto:
 Una vez que ejecutes tus pruebas y compiles el reporte con `npm run report`, abre el siguiente archivo en tu navegador web:
 📁 `target/site/serenity/index.html`
 
+### ⚡ Ejecución en Paralelo
+
+El framework tiene soporte nativo para ejecutar escenarios en paralelo, lo cual reduce significativamente el tiempo total de ejecución de las pruebas.
+
+* **Comportamiento por defecto:** En el archivo `cucumber.js` se define `parallel: 2` por defecto. Esto significa que al correr `npm test`, se ejecutarán como máximo **2 navegadores simultáneamente**. Este límite es ideal para evitar saturar de recursos los agentes de ejecución de Azure DevOps.
+* **Sobrescribir desde la terminal (Recomendado para desarrollo local):** Si estás en tu máquina local y deseas cambiar el número de hilos de ejecución sin modificar el archivo de configuración, puedes usar el parámetro `--parallel` directamente en tu consola:
+
+```bash
+# Ejecutar toda la suite utilizando 4 navegadores en paralelo
+npx cucumber-js --parallel 4
+
+# Ejecutar escenarios con etiquetas específicas usando 3 navegadores en paralelo
+npx cucumber-js --tags "@smoke" --parallel 3
+```
+
 ---
 
 ## 📸 Gestión de Capturas de Pantalla (Evidencias)
