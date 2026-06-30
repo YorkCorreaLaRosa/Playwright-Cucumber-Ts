@@ -18,11 +18,16 @@ BeforeAll(async function () {
 
   // Elegir el motor de navegación según la configuración del archivo config (leído del .env)
   const browserName = config.browserName.toLowerCase();
-  if (browserName === 'firefox') {
-    browser = await firefox.launch(config.browserOptions);
-  } else {
-    // Por defecto se ejecuta en chromium (Chrome)
-    browser = await chromium.launch(config.browserOptions);
+  try {
+    if (browserName === 'firefox') {
+      browser = await firefox.launch(config.browserOptions);
+    } else {
+      // Por defecto se ejecuta en chromium (Chrome)
+      browser = await chromium.launch(config.browserOptions);
+    }
+  } catch (error) {
+    console.error(`❌ ERROR CRÍTICO: No se pudo inicializar el navegador Playwright (${browserName}). Detalle:`, error);
+    throw error;
   }
 });
 

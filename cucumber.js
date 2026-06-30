@@ -1,5 +1,6 @@
 module.exports = {
   default: {
+    parallel: 2,
     formatOptions: {
       snippetInterface: 'async-await'
     },
