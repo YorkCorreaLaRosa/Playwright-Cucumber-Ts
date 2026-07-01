@@ -1,23 +1,23 @@
 # Playwright + Cucumber + TypeScript + Serenity/JS Framework
 
-Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y robusto. Está diseñado siguiendo las mejores prácticas de la industria, utilizando el patrón **Page Object Model (POM)** centralizado, TypeScript para un tipado seguro y **Serenity/JS** para generar reportes vivos de calidad empresarial con capturas de pantalla integradas ante fallos.
+Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y ultra rápido. Está diseñado siguiendo las mejores prácticas de la industria, utilizando el patrón **Page Object Model (POM)** centralizado, TypeScript para un tipado seguro, **Playwright Test Runner** (a través de **`playwright-bdd`**) para una paralelización nativa y robusta, y **Serenity/JS** para generar reportes vivos de calidad empresarial con evidencias integradas ante fallos.
 
 ---
 
 ## 🚀 Características Clave
 
-*   **Playwright**: Automatización de navegadores ultra rápida, estable y con auto-esperas inteligentes.
-*   **Cucumber (BDD)**: Escenarios de prueba definidos en lenguaje Gherkin natural para alineación de negocio/desarrollo.
-*   **Page Object Model (POM)**: Clases de páginas desacopladas y gestionadas dinámicamente mediante un `POMManager` centralizado.
-*   **Serenity/JS Reporting**: Genera reportes interactivos completos, estructurando las evidencias y capturas de pantalla exactamente en el paso fallido de la prueba.
-*   **Sincronización de Timeouts**: Prevención de terminaciones bruscas de Cucumber mediante la alineación del timeout del paso con el del navegador.
+*   **Playwright Test Runner**: Ejecución nativa en paralelo extremadamente rápida y con aislamiento total de hilos.
+*   **Playwright BDD (`playwright-bdd`)**: Traducción y mapeo automático de escenarios de prueba Gherkin (`.feature`) a pruebas nativas de Playwright (`.spec.ts`).
+*   **Page Object Model (POM)**: Clases de páginas desacopladas y gestionadas dinámicamente mediante fixtures de Playwright y un `POMManager` centralizado.
+*   **Serenity/JS Reporting**: Generación de reportes vivos y detallados mediante `@serenity-js/playwright-test`, enlazando capturas de pantalla de fallos de forma automática al reporte.
+*   **Aislamiento de Navegadores**: Gestión automática y thread-safe del ciclo de vida del navegador, contextos y páginas gracias a las fixtures de Playwright.
 
 ---
 
 ## 🛠️ Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado:
-*   [Node.js](https://nodejs.org/) (versión v16 o superior).
+*   [Node.js](https://nodejs.org/) (versión v20 o v22 LTS recomendada).
 *   [Java Runtime Environment (JRE) / JDK 11+](https://www.oracle.com/java/technologies/downloads/) (Requerido únicamente por la CLI de Serenity BDD para compilar los reportes HTML).
 
 ---
@@ -47,25 +47,26 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ## 📂 Estructura del Proyecto
 
-La arquitectura sigue una clara separación de responsabilidades para facilitar el mantenimiento y la escalabilidad:
+La arquitectura sigue una separación estricta de responsabilidades para facilitar el mantenimiento:
 
 ```text
 playwright-cucumber-ts-framework/
 ├── features/             # Escenarios de negocio Gherkin (.feature)
-│   └── login.feature     
+│   ├── login.feature     
+│   └── saucedemo.feature
 ├── src/
 │   ├── pages/            # Patrón Page Object Model (POM)
 │   │   ├── BasePage.ts   # Clase base con utilidades comunes de navegación/UI
 │   │   ├── LoginPage.ts  # Selectores e interacciones de la página de Login
 │   │   └── POMManager.ts # Centralizador y factory perezoso de Page Objects
-│   ├── step-definitions/ # Vinculación entre sentencias Gherkin y POM
-│   │   └── login-steps.ts
-│   └── support/          # Configuración y ciclo de vida de los tests
+│   ├── step-definitions/ # Vinculación entre sentencias Gherkin y POM (usando createBdd)
+│   │   ├── login-steps.ts
+│   │   └── saucedemo-steps.ts
+│   └── support/          # Configuración de soporte y fixtures de Playwright
 │       ├── config.ts     # Carga de variables de entorno y opciones de navegación
-│       ├── custom-world.ts # Configuración del contexto compartido de Cucumber
-│       ├── hooks.ts      # Configuración de Setup/Teardown y screenshots en fallos
-│       └── serenity.config.ts # Configuración de reportes de Serenity BDD
+│       └── fixtures.ts   # Fixtures de Playwright para inyectar pomManager automáticamente
 ├── target/site/serenity/ # Directorio autogenerado con los reportes HTML
+├── playwright.config.ts  # Configuración del motor de Playwright, BDD y Serenity/JS
 ├── package.json          # Gestión de scripts y dependencias
 └── tsconfig.json         # Configuración del compilador de TypeScript
 ```
@@ -78,43 +79,59 @@ Todos los comandos se corren desde la terminal en la raíz del proyecto:
 
 | Comando | Descripción |
 | :--- | :--- |
-| `npm test` | Ejecuta todos los escenarios de Cucumber en la suite. |
-| `npx cucumber-js --tags "@test"` | Corre únicamente los escenarios marcados con la etiqueta `@test`. |
+| `npm test` | Genera las pruebas y ejecuta todos los escenarios de la suite en paralelo. |
+| `npx bddgen && npx playwright test --grep "@test"` | Corre únicamente los escenarios marcados con la etiqueta `@test`. |
 | `npm run report` | Genera y actualiza el reporte HTML de Serenity BDD con las últimas evidencias. |
+| `npx playwright show-report` | Muestra el reporte nativo HTML de Playwright. |
 | `npx tsc --noEmit` | Valida estáticamente el código TypeScript sin compilar archivos físicos para detectar errores de tipos. |
 
-### Visualizar el reporte de pruebas:
+### Visualizar el reporte de Serenity BDD:
 Una vez que ejecutes tus pruebas y compiles el reporte con `npm run report`, abre el siguiente archivo en tu navegador web:
 📁 `target/site/serenity/index.html`
 
-### ⚡ Ejecución en Paralelo
+---
 
-El framework tiene soporte nativo para ejecutar escenarios en paralelo, lo cual reduce significativamente el tiempo total de ejecución de las pruebas.
+## ⚡ Ejecución en Paralelo
 
-* **Comportamiento por defecto:** En el archivo `cucumber.js` se define `parallel: 2` por defecto. Esto significa que al correr `npm test`, se ejecutarán como máximo **2 navegadores simultáneamente**. Este límite es ideal para evitar saturar de recursos los agentes de ejecución de Azure DevOps.
-* **Sobrescribir desde la terminal (Recomendado para desarrollo local):** Si estás en tu máquina local y deseas cambiar el número de hilos de ejecución sin modificar el archivo de configuración, puedes usar el parámetro `--parallel` directamente en tu consola:
+El framework corre en paralelo **de forma nativa** gracias al motor de ejecución de Playwright Test.
+
+* **Comportamiento por defecto:** En `playwright.config.ts` se define `fullyParallel: true`. Playwright distribuirá las pruebas en múltiples workers de forma inteligente basándose en la cantidad de núcleos de CPU de tu máquina.
+* **Limitar o forzar hilos:** Puedes usar el parámetro `--workers` directamente en tu consola si deseas limitar la ejecución (ideal para entornos de Integración Continua como GitHub Actions):
 
 ```bash
-# Ejecutar toda la suite utilizando 4 navegadores en paralelo
-npx cucumber-js --parallel 4
+# Ejecutar toda la suite utilizando exactamente 4 navegadores en paralelo
+npx playwright test --workers=4
 
-# Ejecutar escenarios con etiquetas específicas usando 3 navegadores en paralelo
-npx cucumber-js --tags "@smoke" --parallel 3
+# Ejecutar escenarios específicos en paralelo
+npx bddgen && npx playwright test --grep "@smoke" --workers=3
 ```
 
 ---
 
-## 📸 Gestión de Capturas de Pantalla (Evidencias)
+## 📸 Gestión de Evidencias (Capturas de Pantalla)
 
-El framework utiliza un sistema coordinado en caso de fallos:
-1.  **Custom Tracker**: En `serenity.config.ts` se implementa un Stage Observer que captura el identificador exacto (`activityId`) del paso que falló.
-2.  **Captura dinámica**: Al finalizar el escenario en `hooks.ts` (`After`), si el test falló, Playwright toma un screenshot.
-3.  **Vinculación**: Se anuncia a Serenity/JS mediante el evento `ActivityRelatedArtifactGenerated`, logrando que la captura aparezca incrustada exactamente debajo del paso fallido en el reporte visual.
+La gestión de capturas de pantalla ante fallos se simplifica delegando la responsabilidad a Playwright:
+1. En `playwright.config.ts`, la opción `screenshot: 'only-on-failure'` está habilitada.
+2. Si una prueba falla, Playwright toma automáticamente la captura de pantalla del navegador.
+3. El reportero `@serenity-js/playwright-test` intercepta esta evidencia y la incrusta de forma organizada debajo del paso exacto que falló dentro del reporte de Serenity.
 
 ---
 
 ## 💡 Guía para Escribir una Nueva Prueba
 
-1.  **Define el Escenario**: Crea o añade pasos en un archivo `.feature` dentro de `features/`.
-2.  **Modelado de Páginas (POM)**: Si interactúas con una nueva página, crea su clase en `src/pages/` heredando de `BasePage` y regístrala en `src/pages/POMManager.ts`.
-3.  **Lógica del Paso**: Crea la definición de los pasos en `src/step-definitions/` y realiza las aserciones con `expect(locator).toBe...` de Playwright.
+1. **Define el Escenario**: Crea o añade pasos en un archivo `.feature` dentro de `features/`.
+2. **Modelado de Páginas (POM)**: Si interactúas con una nueva página, crea su clase en `src/pages/` heredando de `BasePage` y regístrala en `src/pages/POMManager.ts`.
+3. **Lógica del Paso**: Crea la definición de los pasos en `src/step-definitions/` utilizando `createBdd(test)` de `playwright-bdd` e interactúa con tus páginas usando el objeto `pomManager` inyectado por las fixtures.
+
+```typescript
+import { createBdd } from 'playwright-bdd';
+import { test } from '../support/fixtures';
+import { expect } from '@playwright/test';
+
+const { Given, When, Then } = createBdd(test);
+
+Given('mi nuevo paso gherkin', async ({ pomManager }) => {
+  const miPagina = pomManager.getMiNuevaPagina();
+  await miPagina.hacerAccion();
+});
+```
