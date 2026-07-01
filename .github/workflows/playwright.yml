@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'Tags de Cucumber a ejecutar (ej: @smoke, @regression). Deja vacío para todos.'
+        description: 'Tags para las pruebas'
         required: false
         default: ''
 jobs:
