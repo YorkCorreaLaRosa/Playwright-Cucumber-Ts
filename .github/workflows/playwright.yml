@@ -5,6 +5,11 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Tags de Cucumber a ejecutar (ej: @smoke, @regression). Deja vacío para todos.'
+        required: false
+        default: ''
 jobs:
   test:
     timeout-minutes: 60
@@ -19,7 +24,12 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Cucumber tests
-      run: npm test
+      run: |
+        if [ -z "${{ github.event.inputs.tags }}" ]; then
+          npm test
+        else
+          npm test -- --tags "${{ github.event.inputs.tags }}"
+        fi
     - name: Generate Serenity Report
       if: ${{ !cancelled() }}
       run: npm run report
