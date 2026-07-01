@@ -11,3 +11,4 @@ target/
 reports/
 .env
 .DS_Store
+.features-gen/
