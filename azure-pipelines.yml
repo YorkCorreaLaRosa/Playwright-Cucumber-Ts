@@ -3,6 +3,15 @@ parameters:
     displayName: 'Etiquetas de Cucumber a ejecutar (ej. @test, @login, @smoke. Dejar vacío para ejecutar todo)'
     type: string
     default: ''
+  - name: testBrowser
+    displayName: 'Selecciona el navegador para las pruebas'
+    type: string
+    default: 'todos'
+    values:
+      - todos
+      - chromium
+      - firefox
+      - webkit
 
 trigger: none
 
@@ -34,29 +43,33 @@ steps:
   # Usamos continueOnError: true para asegurar que si un test falla, el pipeline continúe 
   # y publique los resultados en Azure DevOps.
   - script: |
-      if [ -z "$TEST_TAGS" ]; then
-        echo "No se especificaron tags. Ejecutando todos los escenarios..."
-        npm test
-      else
-        echo "Ejecutando escenarios con la etiqueta/grep: $TEST_TAGS"
-        npm test -- --grep "$TEST_TAGS"
+      ARGS=""
+      
+      # Filtro de Tags
+      if [ ! -z "$TEST_TAGS" ]; then
+        echo "Filtrando por etiqueta: $TEST_TAGS"
+        ARGS="$ARGS --grep $TEST_TAGS"
       fi
+      
+      # Filtro de Navegador
+      if [ "$TEST_BROWSER" != "todos" ] && [ ! -z "$TEST_BROWSER" ]; then
+        echo "Filtrando por navegador: $TEST_BROWSER"
+        ARGS="$ARGS --project $TEST_BROWSER"
+      fi
+      
+      echo "Ejecutando pruebas con argumentos: $ARGS"
+      npm test -- $ARGS
     displayName: 'Ejecutar pruebas automatizadas'
     env:
-      BROWSER: $(BROWSER)
       HEADLESS: $(HEADLESS)
       BASE_URL: $(BASE_URL)
       SAUCE_USERNAME: $(SAUCE_USERNAME)
       SAUCE_PASSWORD: $(SAUCE_PASSWORD)
       TEST_TAGS: ${{ parameters.testTags }}
+      TEST_BROWSER: ${{ parameters.testBrowser }}
     continueOnError: true
 
-  # 5. Generar reporte HTML de Serenity BDD
-  - script: npm run report
-    displayName: 'Generar reporte HTML de Serenity BDD'
-    condition: always()
-
-  # 6. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
+  # 5. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -65,13 +78,4 @@ steps:
       mergeTestResults: true
       testRunTitle: 'Playwright + Cucumber Run'
     displayName: 'Publicar resultados JUnit en Azure DevOps'
-    condition: always()
-
-  # 7. Publicar reporte visual de Serenity como artefacto de compilación
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: 'target/site/serenity/'
-      ArtifactName: 'serenity-report'
-      publishLocation: 'Container'
-    displayName: 'Publicar artefacto Serenity HTML'
     condition: always()
