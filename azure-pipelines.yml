@@ -19,11 +19,11 @@ steps:
   # 1. Instalar Node.js
   - task: UseNode@1
     inputs:
-      version: '18.x'
+      version: '22.x'
     displayName: 'Instalar Node.js'
 
   # 2. Instalar dependencias del proyecto (incluye playwright y serenity/js)
-  - script: npm ci
+  - script: npm ci --legacy-peer-deps
     displayName: 'Instalar dependencias con npm ci'
 
   # 3. Instalar navegadores de Playwright y dependencias del sistema operativo (Ubuntu)
