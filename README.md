@@ -1,6 +1,6 @@
-# Playwright + Cucumber + TypeScript + Serenity/JS Framework
+# Playwright + Cucumber + TypeScript Framework
 
-Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y ultra rápido. Está diseñado siguiendo las mejores prácticas de la industria, utilizando el patrón **Page Object Model (POM)** centralizado, TypeScript para un tipado seguro, **Playwright Test Runner** (a través de **`playwright-bdd`**) para una paralelización nativa y robusta, y **Serenity/JS** para generar reportes vivos de calidad empresarial con evidencias integradas ante fallos.
+Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y ultra rápido. Está diseñado siguiendo las mejores prácticas de la industria, utilizando el patrón **Page Object Model (POM)** centralizado, TypeScript para un tipado seguro, **Playwright Test Runner** (a través de **`playwright-bdd`**) para una paralelización nativa y robusta, y el **Playwright HTML Reporter** oficial para visualizar los resultados de las pruebas.
 
 ---
 
@@ -9,8 +9,8 @@ Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y
 *   **Playwright Test Runner**: Ejecución nativa en paralelo extremadamente rápida y con aislamiento total de hilos.
 *   **Playwright BDD (`playwright-bdd`)**: Traducción y mapeo automático de escenarios de prueba Gherkin (`.feature`) a pruebas nativas de Playwright (`.spec.ts`).
 *   **Page Object Model (POM)**: Clases de páginas desacopladas y gestionadas dinámicamente mediante fixtures de Playwright y un `POMManager` centralizado.
-*   **Serenity/JS Reporting**: Generación de reportes vivos y detallados mediante `@serenity-js/playwright-test`, enlazando capturas de pantalla de fallos de forma automática al reporte.
-*   **Aislamiento de Navegadores**: Gestión automática y thread-safe del ciclo de vida del navegador, contextos y páginas gracias a las fixtures de Playwright.
+*   **Reportería Nativa**: Generación automática de reportes interactivos HTML de Playwright y reportes JUnit en XML para integrarse con herramientas de CI/CD.
+*   **Filtrado por Entorno**: Configuración dinámica de navegadores, credenciales y URLs mediante un archivo `.env` local.
 
 ---
 
@@ -18,7 +18,6 @@ Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y
 
 Antes de comenzar, asegúrate de tener instalado:
 *   [Node.js](https://nodejs.org/) (versión v20 o v22 LTS recomendada).
-*   [Java Runtime Environment (JRE) / JDK 11+](https://www.oracle.com/java/technologies/downloads/) (Requerido únicamente por la CLI de Serenity BDD para compilar los reportes HTML).
 
 ---
 
@@ -59,14 +58,15 @@ playwright-cucumber-ts-framework/
 │   │   ├── BasePage.ts   # Clase base con utilidades comunes de navegación/UI
 │   │   ├── LoginPage.ts  # Selectores e interacciones de la página de Login
 │   │   └── POMManager.ts # Centralizador y factory perezoso de Page Objects
-│   ├── step-definitions/ # Vinculación entre sentencias Gherkin y POM (usando createBdd)
+│   ├── step-definitions/ # Vinculación entre sentencias Gherkin y POM
 │   │   ├── login-steps.ts
 │   │   └── saucedemo-steps.ts
 │   └── support/          # Configuración de soporte y fixtures de Playwright
 │       ├── config.ts     # Carga de variables de entorno y opciones de navegación
 │       └── fixtures.ts   # Fixtures de Playwright para inyectar pomManager automáticamente
-├── target/site/serenity/ # Directorio autogenerado con los reportes HTML
-├── playwright.config.ts  # Configuración del motor de Playwright, BDD y Serenity/JS
+├── playwright-report/    # Carpeta autogenerada con el reporte HTML local
+├── results/              # Carpeta autogenerada con reportes JUnit XML
+├── playwright.config.ts  # Configuración del motor de Playwright, BDD y reportería
 ├── package.json          # Gestión de scripts y dependencias
 └── tsconfig.json         # Configuración del compilador de TypeScript
 ```
@@ -79,53 +79,54 @@ Todos los comandos se corren desde la terminal en la raíz del proyecto:
 
 | Comando | Descripción |
 | :--- | :--- |
-| `npm test` | Genera las pruebas y ejecuta todos los escenarios de la suite en paralelo. |
-| `npx bddgen && npx playwright test --grep "@test"` | Corre únicamente los escenarios marcados con la etiqueta `@test`. |
-| `npm run report` | Genera y actualiza el reporte HTML de Serenity BDD con las últimas evidencias. |
-| `npx playwright show-report` | Muestra el reporte nativo HTML de Playwright. |
+| `npm test` | Genera las pruebas y ejecuta los escenarios de la suite en paralelo. |
+| `npm test -- --grep "@test"` | Corre únicamente los escenarios marcados con la etiqueta `@test`. |
+| `npx playwright show-report` | Abre e inspecciona el reporte interactivo HTML oficial de Playwright. |
 | `npx tsc --noEmit` | Valida estáticamente el código TypeScript sin compilar archivos físicos para detectar errores de tipos. |
 
-### Visualizar el reporte de Serenity BDD:
-Una vez que ejecutes tus pruebas y compiles el reporte con `npm run report`, abre el siguiente archivo en tu navegador web:
-📁 `target/site/serenity/index.html`
-
----
-
-## ⚡ Ejecución en Paralelo
-
-El framework corre en paralelo **de forma nativa** gracias al motor de ejecución de Playwright Test.
-
-* **Comportamiento por defecto:** En `playwright.config.ts` se define `fullyParallel: true`. Playwright distribuirá las pruebas en múltiples workers de forma inteligente basándose en la cantidad de núcleos de CPU de tu máquina.
-* **Limitar o forzar hilos:** Puedes usar el parámetro `--workers` directamente en tu consola si deseas limitar la ejecución (ideal para entornos de Integración Continua como GitHub Actions):
-
+### Visualizar el reporte de pruebas:
+Al finalizar las pruebas, puedes abrir el último reporte generado ejecutando:
 ```bash
-# Ejecutar toda la suite utilizando exactamente 4 navegadores en paralelo
-npx playwright test --workers=4
-
-# Ejecutar escenarios específicos en paralelo
-npx bddgen && npx playwright test --grep "@smoke" --workers=3
+npx playwright show-report
 ```
 
 ---
 
-## 🛠️ Ejecución en Integración Continua (GitHub Actions)
+## ⚡ Ejecución en Paralelo y Navegadores
 
-El framework incluye soporte completo para disparar pruebas de forma manual desde la interfaz de **GitHub Actions** (evento `workflow_dispatch`).
+### Configuración en Local:
+El framework lee de forma automática la variable `BROWSER` en tu archivo `.env` local para filtrar los navegadores a ejecutar:
+* Si `BROWSER=chromium` (valor por defecto), `npm test` se ejecutará **únicamente en Chromium** (ejecutando 4 pruebas en total).
+* Si `BROWSER=all`, las pruebas se distribuirán en paralelo entre **Chromium, Firefox y Webkit** (ejecutando 12 pruebas en total).
 
-Al ejecutar manualmente el flujo **Playwright Tests**, cuentas con los siguientes controles interactivos:
-* **Selección de Navegador:** Un menú desplegable que te permite elegir el navegador de destino (`chromium`, `firefox`, `webkit` o `todos`). Esto es ideal para optimizar el consumo de recursos ejecutando pruebas rápidas en un único navegador en lugar de correr los tres por defecto.
-* **Filtro por Tags:** Una casilla de texto para indicar etiquetas específicas (ej. `@smoke` o `@test`). Si se define, solo se ejecutarán los escenarios que tengan dicha etiqueta.
+### Forzar hilos y workers:
+Puedes controlar la cantidad de navegadores simultáneos (workers) desde la consola:
+```bash
+# Limitar la ejecución a 2 workers paralelos
+npx playwright test --workers=2
+```
 
-El pipeline se encarga de manera automatizada de configurar el entorno de ejecución, instalar Java 17 (necesario para Serenity), aprovisionar las dependencias del proyecto, instalar los navegadores de Playwright, ejecutar las pruebas filtradas y publicar el reporte interactivo de Serenity como un artefacto descargable del pipeline.
+---
+
+## 🛠️ Ejecución en Integración Continua (GitHub Actions y Azure Pipelines)
+
+El framework incluye soporte completo para integraciones de CI/CD:
+
+### GitHub Actions
+* **Ejecución Manual:** Puedes disparar las pruebas manualmente desde la interfaz de GitHub Actions seleccionando el navegador deseado (`todos`, `chromium`, o `firefox`) y opcionalmente un filtro de tags.
+* **Reportes:** El pipeline sube de forma automática el reporte oficial de Playwright (`playwright-report`) como un artefacto descargable al finalizar el flujo.
+
+### Azure Pipelines (`azure-pipelines.yml`)
+* **Parámetros:** Permite seleccionar el navegador (`todos`, `chromium`, `firefox`, `webkit`) y la etiqueta a evaluar desde la UI de Azure DevOps.
+* **Integración Nativa:** Genera un archivo JUnit XML en la ruta `results/junit-results.xml` que Azure DevOps procesa de forma nativa para mostrar los gráficos de éxito/error en la pestaña de **"Tests"** del pipeline.
 
 ---
 
 ## 📸 Gestión de Evidencias (Capturas de Pantalla)
 
-La gestión de capturas de pantalla ante fallos se simplifica delegando la responsabilidad a Playwright:
+La gestión de capturas de pantalla ante fallos se realiza de manera nativa:
 1. En `playwright.config.ts`, la opción `screenshot: 'only-on-failure'` está habilitada.
-2. Si una prueba falla, Playwright toma automáticamente la captura de pantalla del navegador.
-3. El reportero `@serenity-js/playwright-test` intercepta esta evidencia y la incrusta de forma organizada debajo del paso exacto que falló dentro del reporte de Serenity.
+2. Si una prueba falla, Playwright toma automáticamente la captura de pantalla del navegador y la asocia al reporte HTML interactivo de Playwright.
 
 ---
 
