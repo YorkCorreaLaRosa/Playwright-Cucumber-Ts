@@ -41,10 +41,10 @@ jobs:
       run: |
         ARGS=""
         if [ ! -z "${{ github.event.inputs.tags }}" ]; then
-          ARGS="$ARGS --grep '${{ github.event.inputs.tags }}'"
+          ARGS="$ARGS --grep ${{ github.event.inputs.tags }}"
         fi
         if [ "${{ github.event.inputs.browser }}" != "todos" ] && [ ! -z "${{ github.event.inputs.browser }}" ]; then
-          ARGS="$ARGS --project '${{ github.event.inputs.browser }}'"
+          ARGS="$ARGS --project ${{ github.event.inputs.browser }}"
         fi
         npm test -- $ARGS
     - name: Generate Serenity Report
