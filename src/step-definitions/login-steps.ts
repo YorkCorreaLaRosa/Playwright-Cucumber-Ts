@@ -16,10 +16,16 @@ When('envío el usuario {string} y la contraseña {string}', async ({ pomManager
 
 Then('debería ver el mensaje de éxito que contiene {string}', async ({ pomManager }, expectedMessage: string) => {
   const loginPage = pomManager.getLoginPage();
-  await expect(loginPage.flashMessage).toContainText(expectedMessage);
+  await expect(
+    loginPage.flashMessage,
+    `Error de Login: Se esperaba encontrar el mensaje de éxito "${expectedMessage}" en el contenedor, pero no apareció.`
+  ).toContainText(expectedMessage);
 });
 
 Then('debería ver el mensaje de error que contiene {string}', async ({ pomManager }, expectedMessage: string) => {
   const loginPage = pomManager.getLoginPage();
-  await expect(loginPage.flashMessage).toContainText(expectedMessage);
+  await expect(
+    loginPage.flashMessage,
+    `Error de Login: Se esperaba encontrar el mensaje de error "${expectedMessage}" en el contenedor, pero no apareció.`
+  ).toContainText(expectedMessage);
 });
