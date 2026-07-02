@@ -1,4 +1,4 @@
-# Playwright + Cucumber + TypeScript Framework
+# Framework de Automatización Playwright BDD con TypeScript
 
 Un framework de automatización de pruebas End-to-End (E2E) moderno, escalable y ultra rápido. Está diseñado siguiendo las mejores prácticas de la industria, utilizando el patrón **Page Object Model (POM)** centralizado, TypeScript para un tipado seguro, **Playwright Test Runner** (a través de **`playwright-bdd`**) para una paralelización nativa y robusta, y el **Playwright HTML Reporter** oficial para visualizar los resultados de las pruebas.
 
