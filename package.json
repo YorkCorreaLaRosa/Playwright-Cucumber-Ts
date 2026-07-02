@@ -4,11 +4,7 @@
   "description": "Automation framework using Playwright, Cucumber, TypeScript and POM",
   "main": "index.js",
   "scripts": {
-    "test": "bddgen && playwright test",
-    "report:update": "serenity-bdd update --artifact net.serenity-bdd:serenity-cli:jar:3.9.8",
-    "report:generate": "serenity-bdd run --artifact net.serenity-bdd:serenity-cli:jar:3.9.8",
-    "report": "npm run report:update && npm run report:generate",
-    "test:report": "npm test && npm run report:generate"
+    "test": "bddgen && playwright test"
   },
   "keywords": [
     "playwright",
@@ -27,10 +23,6 @@
   },
   "devDependencies": {
     "@playwright/test": "~1.60.0",
-    "@serenity-js/console-reporter": "^3.44.0",
-    "@serenity-js/core": "^3.44.0",
-    "@serenity-js/playwright-test": "^3.44.0",
-    "@serenity-js/serenity-bdd": "^3.44.0",
     "@types/node": "^20.12.12",
     "playwright-bdd": "^9.2.0",
     "pptxgenjs": "^4.0.1"

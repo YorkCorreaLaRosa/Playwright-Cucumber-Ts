@@ -48,13 +48,6 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['junit', { outputFile: 'results/junit-results.xml' }],
-    ['@serenity-js/playwright-test', {
-      crew: [
-        '@serenity-js/console-reporter',
-        ['@serenity-js/serenity-bdd', { specDirectory: 'features' }],
-        ['@serenity-js/core:ArtifactArchiver', { outputDirectory: 'target/site/serenity' }],
-      ]
-    }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
