@@ -1,10 +1,38 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
+import * as dotenv from 'dotenv';
+
+// Cargar variables de entorno del archivo .env
+dotenv.config();
 
 const testDir = defineBddConfig({
   features: 'features/**/*.feature',
   steps: ['src/step-definitions/**/*.ts', 'src/support/fixtures.ts'],
 });
+
+// Definir todos los proyectos disponibles
+const allProjects = [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+  },
+  {
+    name: 'firefox',
+    use: { ...devices['Desktop Firefox'] },
+  },
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  },
+];
+
+// Leer variable BROWSER del archivo .env
+const selectedBrowser = process.env.BROWSER;
+
+// Filtrar proyectos si la variable BROWSER está definida en el .env y no es 'all'
+const projects = selectedBrowser && selectedBrowser !== 'all'
+  ? allProjects.filter(project => project.name === selectedBrowser)
+  : allProjects;
 
 export default defineConfig({
   testDir,
@@ -36,19 +64,6 @@ export default defineConfig({
     testIdAttribute: 'data-test',
   },
 
-  /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  /* Configure projects dynamically based on .env */
+  projects,
 });
