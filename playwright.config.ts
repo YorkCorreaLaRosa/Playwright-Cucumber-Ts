@@ -36,6 +36,12 @@ const projects = selectedBrowser && selectedBrowser !== 'all'
 
 export default defineConfig({
   testDir,
+  /* Timeout por cada prueba */
+  timeout: 30000,
+  expect: {
+    /* Timeout máximo para aserciones (como toContainText) */
+    timeout: 5000,
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -51,6 +57,17 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    /* Ejecutar en modo headless basándose en la variable del .env */
+    headless: process.env.HEADLESS !== 'false',
+    /* Opciones de lanzamiento del navegador */
+    launchOptions: {
+      slowMo: 0,
+      args: [
+        '--start-maximized',
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream',
+      ],
+    },
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
