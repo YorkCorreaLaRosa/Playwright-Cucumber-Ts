@@ -1,4 +1,3 @@
-
 # Playwright
 node_modules/
 /test-results/
@@ -6,9 +5,32 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-#Reports
+
+# Reports
 target/
 reports/
+
+# Environment variables
 .env
+.env*
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Generados dinámicamente
 .features-gen/
