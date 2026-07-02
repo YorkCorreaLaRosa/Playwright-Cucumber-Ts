@@ -4,7 +4,7 @@ Feature: Funcionalidad de Login
   Scenario: Inicio de Sesión Exitoso con Credenciales Válidas
     Given navego a la página de login
     When envío el usuario "tomsmith" y la contraseña "SuperSecretPassword!"
-    Then debería ver el mensaje de éxito que contiene "You logged into a secure area!"
+    Then debería ver el mensaje de éxito que contiene "You logged into a secure are!"
 
   Scenario: Inicio de Sesión Fallido con Credenciales Inválidas
     Given navego a la página de login
