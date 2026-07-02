@@ -6,8 +6,18 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
     inputs:
+      browser:
+        description: 'Selecciona el navegador (dejar vacío para ejecutar en todos)'
+        required: false
+        default: 'todos'
+        type: choice
+        options:
+          - todos
+          - chromium
+          - firefox
+          - webkit
       tags:
-        description: 'Tags para las pruebas'
+        description: 'Tags para las pruebas (ej: @test, @smoke)'
         required: false
         default: ''
 jobs:
@@ -30,11 +40,14 @@ jobs:
       run: npx playwright install --with-deps
     - name: Run Cucumber tests
       run: |
-        if [ -z "${{ github.event.inputs.tags }}" ]; then
-          npm test
-        else
-          npm test -- --grep "${{ github.event.inputs.tags }}"
+        ARGS=""
+        if [ ! -z "${{ github.event.inputs.tags }}" ]; then
+          ARGS="$ARGS --grep '${{ github.event.inputs.tags }}'"
         fi
+        if [ "${{ github.event.inputs.browser }}" != "todos" ] && [ ! -z "${{ github.event.inputs.browser }}" ]; then
+          ARGS="$ARGS --project '${{ github.event.inputs.browser }}'"
+        fi
+        npm test -- $ARGS
     - name: Generate Serenity Report
       if: ${{ !cancelled() }}
       run: npm run report
