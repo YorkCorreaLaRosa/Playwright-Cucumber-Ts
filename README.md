@@ -108,6 +108,18 @@ npx bddgen && npx playwright test --grep "@smoke" --workers=3
 
 ---
 
+## 🛠️ Ejecución en Integración Continua (GitHub Actions)
+
+El framework incluye soporte completo para disparar pruebas de forma manual desde la interfaz de **GitHub Actions** (evento `workflow_dispatch`).
+
+Al ejecutar manualmente el flujo **Playwright Tests**, cuentas con los siguientes controles interactivos:
+* **Selección de Navegador:** Un menú desplegable que te permite elegir el navegador de destino (`chromium`, `firefox`, `webkit` o `todos`). Esto es ideal para optimizar el consumo de recursos ejecutando pruebas rápidas en un único navegador en lugar de correr los tres por defecto.
+* **Filtro por Tags:** Una casilla de texto para indicar etiquetas específicas (ej. `@smoke` o `@test`). Si se define, solo se ejecutarán los escenarios que tengan dicha etiqueta.
+
+El pipeline se encarga de manera automatizada de configurar el entorno de ejecución, instalar Java 17 (necesario para Serenity), aprovisionar las dependencias del proyecto, instalar los navegadores de Playwright, ejecutar las pruebas filtradas y publicar el reporte interactivo de Serenity como un artefacto descargable del pipeline.
+
+---
+
 ## 📸 Gestión de Evidencias (Capturas de Pantalla)
 
 La gestión de capturas de pantalla ante fallos se simplifica delegando la responsabilidad a Playwright:
