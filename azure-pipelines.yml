@@ -30,7 +30,7 @@ steps:
   - script: npx playwright install --with-deps
     displayName: 'Instalar navegadores de Playwright'
 
-  # 4. Ejecutar los escenarios de Cucumber
+  # 4. Ejecutar los escenarios de Cucumber con Playwright Test
   # Usamos continueOnError: true para asegurar que si un test falla, el pipeline continúe 
   # y publique los resultados en Azure DevOps.
   - script: |
@@ -38,8 +38,8 @@ steps:
         echo "No se especificaron tags. Ejecutando todos los escenarios..."
         npm test
       else
-        echo "Ejecutando escenarios con la etiqueta: $TEST_TAGS"
-        npx cucumber-js --tags "$TEST_TAGS"
+        echo "Ejecutando escenarios con la etiqueta/grep: $TEST_TAGS"
+        npm test -- --grep "$TEST_TAGS"
       fi
     displayName: 'Ejecutar pruebas automatizadas'
     env:
@@ -51,7 +51,12 @@ steps:
       TEST_TAGS: ${{ parameters.testTags }}
     continueOnError: true
 
-  # 5. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
+  # 5. Generar reporte HTML de Serenity BDD
+  - script: npm run report
+    displayName: 'Generar reporte HTML de Serenity BDD'
+    condition: always()
+
+  # 6. Publicar Resultados JUnit en la pestaña "Tests" de Azure DevOps
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -60,4 +65,13 @@ steps:
       mergeTestResults: true
       testRunTitle: 'Playwright + Cucumber Run'
     displayName: 'Publicar resultados JUnit en Azure DevOps'
+    condition: always()
+
+  # 7. Publicar reporte visual de Serenity como artefacto de compilación
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'target/site/serenity/'
+      ArtifactName: 'serenity-report'
+      publishLocation: 'Container'
+    displayName: 'Publicar artefacto Serenity HTML'
     condition: always()

@@ -19,6 +19,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html'],
+    ['junit', { outputFile: 'results/junit-results.xml' }],
     ['@serenity-js/playwright-test', {
       crew: [
         '@serenity-js/console-reporter',
