@@ -62,7 +62,7 @@ playwright-cucumber-ts-framework/
 │   │   ├── login-steps.ts
 │   │   └── saucedemo-steps.ts
 │   └── support/          # Configuración de soporte y fixtures de Playwright
-│       ├── config.ts     # Carga de variables de entorno y opciones de navegación
+│       ├── config.ts     # Carga de variables de entorno (URL y credenciales)
 │       └── fixtures.ts   # Fixtures de Playwright para inyectar pomManager automáticamente
 ├── playwright-report/    # Carpeta autogenerada con el reporte HTML local
 ├── results/              # Carpeta autogenerada con reportes JUnit XML
